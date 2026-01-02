@@ -1,0 +1,55 @@
+# File: roles/base/tasks/main.yml
+
+- name: Create /etc/hosts file from template
+  ansible.builtin.template:
+    src: hosts.j2
+    dest: /etc/hosts
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  
+- name: Set system timezone to Europe/Berlin
+  ansible.builtin.timezone:
+    name: Europe/Berlin
+ 
+- name: Generate required locales
+  community.general.locale_gen:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - en_US.UTF-8
+    - ru_RU.UTF-8
+ 
+- name: Set LANG and LC_CTYPE for proper Cyrillic support
+  ansible.builtin.lineinfile:
+    path: /etc/default/locale
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    create: yes
+  loop:
+    - { regexp: "^LANG=", line: "LANG=en_US.UTF-8" }
+    - { regexp: "^LC_CTYPE=", line: "LC_CTYPE=ru_RU.UTF-8" }
+
+- name: Install - curl mc htop btop tree gpg
+  ansible.builtin.apt:
+    name:
+      - curl
+      - mc
+      - htop
+      - btop
+      - tree
+      - gpg
+    state: present
+    update_cache: yes
+ 
+- name: Purge Postfix
+  ansible.builtin.apt:
+    name: postfix
+    state: absent
+    purge: yes
+ 
+- name: Autoremove dependencies
+  ansible.builtin.apt:
+    autoremove: yes
+    purge: yes    
+ 

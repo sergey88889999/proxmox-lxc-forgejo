@@ -1,0 +1,12 @@
+# File: roles/backup/templates/forgejo-backup.timer.j2
+[Unit]
+Description=Daily Forgejo Backup at 3 AM
+Requires=forgejo-backup.service
+
+[Timer]
+OnCalendar=*-*-* 03:00:00
+Persistent=true
+RandomizedDelaySec=30m
+
+[Install]
+WantedBy=timers.target

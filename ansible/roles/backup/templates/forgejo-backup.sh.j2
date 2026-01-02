@@ -1,0 +1,44 @@
+#!/bin/bash
+# File: roles/backup/templates/forgejo-backup.sh.j2
+
+# Backup configuration
+DATE=$(date +%Y%m%d_%H%M)
+PROJECT_DIR="{{ forgejo_path }}"
+BACKUP_DIR="{{ backup_path }}"
+BACKUP_FILE="$BACKUP_DIR/forgejo_data_$DATE.tar.gz"
+LOG_FILE="$BACKUP_DIR/backup.log"
+
+# Redirect stdout and stderr to log file
+exec > >(tee -a "$LOG_FILE") 2>&1
+
+echo "------------------------------------------"
+echo "[$DATE] Starting cold backup (data only)..."
+
+# Change to project directory
+cd "$PROJECT_DIR" || { echo "[$DATE] ERROR: Could not cd to $PROJECT_DIR"; exit 1; }
+
+# Stop Docker containers
+echo "Stopping Docker stack..."
+docker compose stop
+
+# Create archive with numeric owners (preserves UID/GID)
+echo "Archiving app_data, db_data..."
+if tar --numeric-owner -cpzf "$BACKUP_FILE" app_data db_data; then
+    echo "Archive created successfully."
+else
+    echo "[$DATE] ERROR: Tar failed!"
+    # Restart containers even if backup failed
+    docker compose start
+    exit 1
+fi
+
+# Restart Docker stack
+echo "Starting Docker stack..."
+docker compose start
+
+# Rotate old backups (delete backups older than 10 days)
+echo "Rotating old backups..."
+find "$BACKUP_DIR" -name "forgejo_data_*.tar.gz" -type f -mtime +10 -delete
+
+echo "[$DATE] Backup completed: $BACKUP_FILE"
+echo "------------------------------------------"

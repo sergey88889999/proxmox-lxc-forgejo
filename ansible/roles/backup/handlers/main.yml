@@ -1,0 +1,4 @@
+# File: roles/backup/handlers/main.yml
+- name: Reload systemd
+  ansible.builtin.systemd_service:
+        daemon_reload: yes

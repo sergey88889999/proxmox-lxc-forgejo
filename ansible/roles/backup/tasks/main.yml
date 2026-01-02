@@ -1,0 +1,46 @@
+# File: roles/backup/tasks/main.yml
+
+# Create symlink to NAS backup directory
+- name: Create symlink for backups
+  ansible.builtin.file:
+    src: /mnt/share/backups/forgejo
+    dest: "{{ backup_path }}"
+    state: link
+
+- name: Deploy backup script from template
+  ansible.builtin.template:
+    src: forgejo-backup.sh.j2
+    dest: "{{ forgejo_path }}/forgejo-backup.sh"
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Create backup service unit
+  ansible.builtin.template:
+    src: forgejo-backup.service.j2
+    dest: /etc/systemd/system/forgejo-backup.service
+    mode: '0644'
+  notify: Reload systemd
+
+- name: Create backup timer unit
+  ansible.builtin.template:
+    src: forgejo-backup.timer.j2
+    dest: /etc/systemd/system/forgejo-backup.timer
+    mode: '0644'
+  notify: Reload systemd
+
+# Enable timer (service is oneshot, triggered by timer only)
+- name: Enable and start backup timer
+  ansible.builtin.systemd_service:
+    name: forgejo-backup.timer
+    enabled: yes
+    state: started
+
+# Run: sudo ./forgejo-restore.sh forgejo_data_20251105_1200.tar.gz
+- name: Deploy restore script from template
+  ansible.builtin.template:
+    src: forgejo-restore.sh.j2
+    dest: "{{ forgejo_path }}/forgejo-restore.sh"
+    mode: '0755'
+    owner: root
+    group: root

@@ -1,0 +1,35 @@
+# File: ansible/playbook.yml
+
+- name: Configure Forgejo Git Server
+  hosts: forgejo_server
+  become: true 
+  gather_facts: true
+
+  vars_files:
+    - secrets.yml
+
+  vars:
+    project_name: "forgejo-server"  # Container hostname
+    forgejo_path: "/opt/forgejo"    # Forgejo data directory
+    backup_path: "/opt/backups"     # NAS mount point for backups
+     
+  roles:
+    - role: base          
+      tags: [base]
+
+    - role: docker        
+      tags: [docker]
+
+    - role: forgejo       
+      tags: [forgejo]
+
+    - role: nginx         
+      tags: [nginx]
+     
+    - role: backup        
+      tags: [backup]
+ 
+    - role: security      
+      tags: [security]
+      
+ 

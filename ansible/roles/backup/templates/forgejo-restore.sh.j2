@@ -1,0 +1,62 @@
+#!/bin/bash
+# File: roles/backup/templates/forgejo-restore.sh.j2
+
+# Check if backup filename argument is provided
+if [ -z "$1" ]; then
+    echo "Usage: $0 <backup_filename_or_path>"
+    echo "Example: $0 forgejo_data_20251105_1200.tar.gz"
+    exit 1
+fi
+
+BACKUP_INPUT="$1"
+PROJECT_DIR="{{ forgejo_path }}"
+BACKUP_DIR="{{ backup_path }}"
+LOG_FILE="$BACKUP_DIR/restore.log"
+
+# Determine full path to backup file
+if [[ "$BACKUP_INPUT" == /* ]]; then
+    BACKUP_FILE="$BACKUP_INPUT"
+else
+    BACKUP_FILE="$BACKUP_DIR/$BACKUP_INPUT"
+fi
+
+# Redirect stdout and stderr to log file
+exec > >(tee -a "$LOG_FILE") 2>&1
+
+DATE=$(date +%Y%m%d_%H%M)
+echo "------------------------------------------"
+echo "[$DATE] Starting restoration from $BACKUP_FILE"
+
+# Check if backup file exists
+if [ ! -f "$BACKUP_FILE" ]; then
+    echo "[$DATE] ERROR: Backup file $BACKUP_FILE not found!"
+    exit 1
+fi
+
+# Change to project directory
+cd "$PROJECT_DIR" || { echo "ERROR: Could not cd to $PROJECT_DIR"; exit 1; }
+
+# Stop Docker containers
+echo "Stopping Docker stack..."
+docker compose stop
+
+# Clean up current data before restoration
+echo "Cleaning up current data (app_data, db_data)..."
+rm -rf app_data db_data
+
+# Extract backup archive
+echo "Extracting archive..."
+# Preserve UID/GID from archive without mapping to host usernames
+if tar --numeric-owner -xpzf "$BACKUP_FILE" -C "$PROJECT_DIR"; then
+    echo "Archive extracted successfully."
+else
+    echo "[$DATE] ERROR: Extraction failed!"
+    exit 1
+fi
+
+# Start Docker stack
+echo "Starting Docker stack..."
+docker compose up -d
+
+echo "[$DATE] Restoration completed successfully."
+echo "------------------------------------------"

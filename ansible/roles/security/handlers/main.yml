@@ -1,0 +1,5 @@
+# File: roles/security/handlers/main.yml
+- name: Restart SSH
+  ansible.builtin.systemd_service:
+    name: ssh
+    state: restarted  

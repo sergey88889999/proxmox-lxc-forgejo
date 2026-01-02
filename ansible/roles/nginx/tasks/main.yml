@@ -1,0 +1,50 @@
+# File: roles/nginx/tasks/main.yml
+
+# Nginx
+- name: Install Nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+
+- name: Start and enable Nginx
+  ansible.builtin.systemd:
+    name: nginx
+    state: started
+    enabled: yes
+
+- name: Create directory for SSL
+  ansible.builtin.file:
+    path: /etc/nginx/ssl
+    state: directory
+    mode: '0755'
+
+- name: Generate self-signed SSL certificate for IP access
+  ansible.builtin.command:
+    cmd: >
+      openssl req -x509 -nodes -days 365 -newkey rsa:2048
+      -keyout /etc/nginx/ssl/forgejo.key
+      -out /etc/nginx/ssl/forgejo.crt
+      -subj "/C=DE/L=Minden/O=Forgejo/CN={{ container_ip }}"
+      -addext "subjectAltName = IP:{{ container_ip }}"
+    creates: /etc/nginx/ssl/forgejo.crt
+  notify: Reload Nginx
+
+- name: Copy Nginx config for Forgejo
+  ansible.builtin.template:
+    src: forgejo.conf.j2
+    dest: /etc/nginx/sites-available/forgejo
+    mode: '0644'
+  notify: Reload Nginx
+
+- name: Enable Forgejo site
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/forgejo
+    dest: /etc/nginx/sites-enabled/forgejo
+    state: link
+  notify: Reload Nginx
+
+- name: Remove default nginx site
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Reload Nginx
