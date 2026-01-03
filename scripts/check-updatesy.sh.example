@@ -1,0 +1,50 @@
+# File: scripts/check-updates.sh.example
+#
+# Script to check versions of main components for server lifecycle monitoring
+#
+# Usage:
+#   1. Copy this file: cp check-updates.sh.example check-updates.sh
+#   2. Edit SERVER variable to match your container IP
+#   3. Run: ./check-updates.sh
+
+set -e
+
+# Configuration
+SERVER="ansible@192.168.10.51"
+PORT="2222"
+
+echo "Checking versions - Server vs Latest Available"
+echo ""
+
+echo "Collecting data..."
+
+# Forgejo
+CURRENT_FORGEJO=$(ssh -p $PORT $SERVER 'sudo docker exec forgejo-app forgejo --version 2>/dev/null' | grep -oP 'version \K[0-9.]+' || echo "N/A")
+LATEST_FORGEJO=$(curl -s https://codeberg.org/api/v1/repos/forgejo/forgejo/releases | grep -oP '"tag_name":"v\K[0-9.]+' | head -1 || echo "N/A")
+
+# PostgreSQL
+CURRENT_PG=$(ssh -p $PORT $SERVER 'sudo docker exec forgejo-db psql --version 2>/dev/null' | grep -oP '\d+\.\d+' || echo "N/A")
+LATEST_PG=$(curl -s 'https://registry.hub.docker.com/v2/repositories/library/postgres/tags?page_size=100' | grep -oP '"name":"17\.\d+"' | grep -oP '17\.\d+' | sort -V | tail -1 || echo "N/A")
+
+# Docker
+CURRENT_DOCKER=$(ssh -p $PORT $SERVER 'sudo docker version --format "{{.Server.Version}}" 2>/dev/null' || echo "N/A")
+LATEST_DOCKER=$(ssh -p $PORT $SERVER 'apt-cache policy docker-ce 2>/dev/null' | grep -oP 'Candidate: 5:\K[0-9.]+' | head -1 || echo "N/A")
+
+# Nginx
+CURRENT_NGINX=$(ssh -p $PORT $SERVER 'sudo nginx -v 2>&1' | grep -oP 'nginx/\K[0-9.]+' || echo "N/A")
+LATEST_NGINX=$(ssh -p $PORT $SERVER 'apt-cache policy nginx 2>/dev/null' | grep -oP 'Candidate: \K[0-9.]+' | head -1 || echo "N/A")
+
+# Debian
+CURRENT_DEBIAN=$(ssh -p $PORT $SERVER 'cat /etc/debian_version 2>/dev/null' || echo "N/A")
+LATEST_DEBIAN=$(curl -s https://www.debian.org/releases/stable/ | grep -oP 'Debian \K[0-9.]+' | head -1 || echo "N/A")
+
+# Output results
+echo ""
+printf "%-20s %-15s %-15s\n" "Component" "Server" "Latest"
+printf "%-20s %-15s %-15s\n" "--------" "------" "------"
+printf "%-20s %-15s %-15s\n" "Forgejo" "$CURRENT_FORGEJO" "$LATEST_FORGEJO"
+printf "%-20s %-15s %-15s\n" "PostgreSQL" "$CURRENT_PG" "$LATEST_PG"
+printf "%-20s %-15s %-15s\n" "Docker" "$CURRENT_DOCKER" "$LATEST_DOCKER"
+printf "%-20s %-15s %-15s\n" "Nginx" "$CURRENT_NGINX" "$LATEST_NGINX"
+printf "%-20s %-15s %-15s\n" "Debian" "$CURRENT_DEBIAN" "$LATEST_DEBIAN"
+echo ""

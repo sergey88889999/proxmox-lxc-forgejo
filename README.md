@@ -83,5 +83,28 @@ sudo /opt/forgejo/forgejo-backup.sh
 sudo /opt/forgejo/forgejo-restore.sh <backup-file>
 ```
 
+## Maintenance
+
+### Check for Updates
+
+Monitor component versions to track server lifecycle:
+```bash
+# Setup
+cp scripts/check-updates.sh.example scripts/check-updates.sh
+# Edit SERVER variable in the script
+nano scripts/check-updates.sh
+
+# Run
+./scripts/check-updates.sh
+```
+
+Output shows current vs latest versions for:
+- Forgejo
+- PostgreSQL
+- Docker
+- Nginx
+- Debian
+
+
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
