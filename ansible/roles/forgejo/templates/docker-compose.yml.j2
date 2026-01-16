@@ -20,9 +20,9 @@ services:
       retries: 5
 
   forgejo:
-    # Forgejo 13-rootless: floating tag pulls latest patch in v13 branch (e.g., 13.0.3, 13.1.0...)
+    # Forgejo 13-rootless: floating tag pulls latest patch in v14 branch (e.g., 14.0.1, 14.0.2...)
     # Automatic patch updates on container restart, manual major version upgrades
-    image: codeberg.org/forgejo/forgejo:13-rootless
+    image: codeberg.org/forgejo/forgejo:14-rootless
     container_name: forgejo-app
     restart: unless-stopped
     depends_on:

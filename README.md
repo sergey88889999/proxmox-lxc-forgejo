@@ -1,7 +1,7 @@
 [![OpenTofu](https://img.shields.io/badge/OpenTofu-1.11+-FFDA18?logo=opentofu&logoColor=black)](https://opentofu.org/)
 [![Ansible](https://img.shields.io/badge/Ansible-2.19+-EE0000?logo=ansible&logoColor=white)](https://www.ansible.com/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
-[![Forgejo](https://img.shields.io/badge/Forgejo-13.0+-FB923C?logo=forgejo&logoColor=white)](https://forgejo.org/)
+[![Forgejo](https://img.shields.io/badge/Forgejo-14.0+-FB923C?logo=forgejo&logoColor=white)](https://forgejo.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17+-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 
 [![Debian](https://img.shields.io/badge/Debian-13+-A81D33?logo=debian&logoColor=white)](https://www.debian.org/)
