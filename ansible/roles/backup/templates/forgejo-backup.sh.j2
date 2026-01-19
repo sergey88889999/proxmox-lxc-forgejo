@@ -38,7 +38,7 @@ docker compose start
 
 # Rotate old backups (delete backups older than 10 days)
 echo "Rotating old backups..."
-find "$BACKUP_DIR" -name "forgejo_data_*.tar.gz" -type f -mtime +10 -delete
+find "$BACKUP_DIR/" -name "forgejo_data_*.tar.gz" -type f -mtime +10 -delete
 
 echo "[$DATE] Backup completed: $BACKUP_FILE"
 echo "------------------------------------------"

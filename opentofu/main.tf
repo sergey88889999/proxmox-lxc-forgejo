@@ -195,6 +195,7 @@ resource "proxmox_lxc" "forgejo_server" {
       "sleep 10",
       "echo '=== Installing base packages'",
       "apt-get update",
+      "DEBIAN_FRONTEND=noninteractive apt-get upgrade -y",
       "DEBIAN_FRONTEND=noninteractive apt-get install -y sudo curl locales",
       
       "echo '=== Creating ${local.ansible_user} user'",

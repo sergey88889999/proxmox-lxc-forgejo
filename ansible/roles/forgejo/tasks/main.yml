@@ -37,5 +37,6 @@
   community.docker.docker_compose_v2:
     project_src: "{{ forgejo_path }}"
     state: present
+    build: never
     wait: true
     timeout: 90
