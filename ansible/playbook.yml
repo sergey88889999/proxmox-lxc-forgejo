@@ -1,7 +1,7 @@
 # File: ansible/playbook.yml
 
 - name: Configure Forgejo Git Server
-  hosts: forgejo_server
+  hosts: forgejo
   become: true 
   gather_facts: true
 

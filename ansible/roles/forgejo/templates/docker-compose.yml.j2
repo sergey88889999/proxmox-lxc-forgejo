@@ -20,7 +20,7 @@ services:
       retries: 5
 
   forgejo:
-    # Forgejo 13-rootless: floating tag pulls latest patch in v14 branch (e.g., 14.0.1, 14.0.2...)
+    # Forgejo 14-rootless: floating tag pulls latest patch in v14 branch (e.g., 14.0.1, 14.0.2...)
     # Automatic patch updates on container restart, manual major version upgrades
     image: codeberg.org/forgejo/forgejo:14-rootless
     container_name: forgejo-app
@@ -36,9 +36,9 @@ services:
       FORGEJO__database__NAME: forgejo
       FORGEJO__database__USER: forgejo
       FORGEJO__database__PASSWD: ${DB_PASSWORD}
-      FORGEJO__server__DOMAIN: {{ container_ip }}
-      FORGEJO__server__ROOT_URL: https://{{ container_ip }}/
-      FORGEJO__server__SSH_DOMAIN: {{ container_ip }}
+      FORGEJO__server__DOMAIN: {{ ansible_host }}
+      FORGEJO__server__ROOT_URL: https://{{ ansible_host }}/
+      FORGEJO__server__SSH_DOMAIN: {{ ansible_host }}
       FORGEJO__server__SSH_PORT: 22
       FORGEJO__server__SSH_LISTEN_PORT: 22
       FORGEJO__repository__USE_COMPAT_SSH_URI: false

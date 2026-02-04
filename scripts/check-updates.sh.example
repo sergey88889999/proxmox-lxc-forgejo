@@ -13,7 +13,7 @@ set -e
 SERVER="ansible@192.168.10.51"
 PORT="2222"
 
-echo "Checking versions - Server vs Latest Available"
+echo "Checking versions on ${SERVER#*@} - Server vs Latest Available"
 echo ""
 
 echo "Collecting data..."
@@ -28,11 +28,11 @@ LATEST_PG=$(curl -s 'https://registry.hub.docker.com/v2/repositories/library/pos
 
 # Docker
 CURRENT_DOCKER=$(ssh -p $PORT $SERVER 'sudo docker version --format "{{.Server.Version}}" 2>/dev/null' || echo "N/A")
-LATEST_DOCKER=$(ssh -p $PORT $SERVER 'apt-cache policy docker-ce 2>/dev/null' | grep -oP 'Candidate: 5:\K[0-9.]+' | head -1 || echo "N/A")
+LATEST_DOCKER=$(ssh -p $PORT $SERVER 'curl -s https://api.github.com/repos/moby/moby/releases/latest | grep -o "\"tag_name\": *\"[^\"]*\"" | cut -d"\"" -f4 | sed "s/docker-v//"')
 
 # Nginx
 CURRENT_NGINX=$(ssh -p $PORT $SERVER 'sudo nginx -v 2>&1' | grep -oP 'nginx/\K[0-9.]+' || echo "N/A")
-LATEST_NGINX=$(ssh -p $PORT $SERVER 'apt-cache policy nginx 2>/dev/null' | grep -oP 'Candidate: \K[0-9.]+' | head -1 || echo "N/A")
+LATEST_NGINX=$(ssh -p $PORT $SERVER 'curl -s "https://packages.debian.org/trixie/nginx" | grep "thumbnail-with-version" | grep -oP "\\d+\\.\\d+\\.\\d+" | head -1')
 
 # Debian
 CURRENT_DEBIAN=$(ssh -p $PORT $SERVER 'cat /etc/debian_version 2>/dev/null' || echo "N/A")
@@ -48,3 +48,4 @@ printf "%-20s %-15s %-15s\n" "Docker" "$CURRENT_DOCKER" "$LATEST_DOCKER"
 printf "%-20s %-15s %-15s\n" "Nginx" "$CURRENT_NGINX" "$LATEST_NGINX"
 printf "%-20s %-15s %-15s\n" "Debian" "$CURRENT_DEBIAN" "$LATEST_DEBIAN"
 echo ""
+ssh -p $PORT $SERVER 'df -h /'

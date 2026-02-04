@@ -14,17 +14,23 @@ Configures a Debian 13 LXC container with:
 - Security hardening (UFW firewall, SSH)
 
 ## Quick Start
+
+### Step 1: Prepare Inventory
+> [!IMPORTANT]
+> The `inventory.ini` file is **automatically generated** by OpenTofu. Ensure you have run `tofu apply` in the `opentofu/` directory first.
+
+Verify that the file exists and contains the correct IP addresses:
 ```bash
-# 1. Create secrets file
+cat inventory.ini
+```
+### Step 2. Create secrets file
+```bash
 cp secrets.yml.example secrets.yml
-nano secrets.yml  # Edit: container_ip, db_password
-
-# 2. Update inventory
-cp inventory.ini.example inventory.ini
-nano inventory.ini  # Edit: container_ip (must match OpenTofu)
-
-# 3. Run playbook
-ansible-playbook playbook.yml
+nano secrets.yml  # Edit: db_password
+```
+### Step 3. Run playbook
+```bash 
+ansible-playbook playbook.yml -l prod    # or test
 ```
 
 ## Configuration
@@ -33,7 +39,6 @@ ansible-playbook playbook.yml
 
 Configure in `secrets.yml`:
 ```yaml
-container_ip: "192.168.10.51"  # Without /24 CIDR notation
 db_password: "strong_password_here"
 ```
 Generate secure password:
@@ -41,13 +46,7 @@ Generate secure password:
 openssl rand -base64 32
 ```
 
-### Inventory
-
-Update `inventory.ini` with container IP:
-```ini
-[forgejo_server]
-192.168.10.51 
-```
+## Playbook
 
 ## Roles
 
@@ -65,23 +64,24 @@ Playbook executes roles in this order:
 Run specific roles using tags:
 ```bash
 # Only update Forgejo
-ansible-playbook playbook.yml --tags forgejo
+ansible-playbook playbook.yml --tags forgejo -l test
 
 # Skip backups
-ansible-playbook playbook.yml --skip-tags backup
+ansible-playbook playbook.yml --skip-tags backup -l test
 ```
 ## Useful Commands
 
-### Check versions
+### Check for Updates
+
+Monitor component versions to track server lifecycle:
 ```bash
-# Forgejo version
-ssh ansible@<container_ip> -p 2222 'sudo docker exec forgejo-app forgejo --version'
+# Setup
+cp scripts/check-updates.sh.example scripts/check-updates.sh
+# Edit SERVER variable in the script: ip + ssh port
+nano scripts/check-updates.sh
 
-# PostgreSQL version
-ssh ansible@<container_ip> -p 2222 'sudo docker exec forgejo-db psql --version'
-
-# Docker version
-ssh ansible@<container_ip> -p 2222 'docker --version'
+# Run
+./scripts/check-updates.sh
 ```
 
 ## Important Notes

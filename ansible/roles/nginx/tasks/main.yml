@@ -24,8 +24,8 @@
       openssl req -x509 -nodes -days 365 -newkey rsa:2048
       -keyout /etc/nginx/ssl/forgejo.key
       -out /etc/nginx/ssl/forgejo.crt
-      -subj "/C=DE/L=Minden/O=Forgejo/CN={{ container_ip }}"
-      -addext "subjectAltName = IP:{{ container_ip }}"
+      -subj "/C=DE/L=Minden/O=Forgejo/CN={{ ansible_host }}"
+      -addext "subjectAltName = IP:{{ ansible_host }}"
     creates: /etc/nginx/ssl/forgejo.crt
   notify: Reload Nginx
 

@@ -10,15 +10,19 @@ Deploys a Debian 13 LXC container with:
 - Dedicated ansible user for provisioning
 - SSH on port 2222
 - NAS mount for backups
+- Automatic Ansible Inventory generation (Syncs IP, Port, and SSH keys)
 
 ## Quick Start
 ```bash
 # 1. Create secrets file
 cp secrets.auto.tfvars.example secrets.auto.tfvars
-nano secrets.auto.tfvars
+nano secrets.auto.tfvars # Edit: pm_api_url, root_password, ip_prod/test
 
 # 2. Deploy infrastructure
 tofu init
+tofu workspace new prod
+tofu workspace new test
+tofu workspace select prod   # or test
 tofu apply
 
 # 3. Verify deployment
@@ -40,8 +44,10 @@ Configure in `secrets.auto.tfvars`:
 pm_api_url    = "https://192.168.10.5:8006/api2/json"
 pm_user       = "root@pam"
 pm_password   = "your_proxmox_password"
-container_ip  = "192.168.10.51/24"
+
 root_password = "container_root_password"
+ip_prod = "192.168.10.51/24"
+ip_test = "192.168.10.52/24"
 ```
 
 ### Optional (with defaults)
@@ -66,3 +72,4 @@ After successful deployment:
 - Container is configured for Docker (AppArmor, capabilities)
 - Root SSH access is disabled after provisioning
 - Ansible user has passwordless sudo
+- Auto-generated Ansible inventory

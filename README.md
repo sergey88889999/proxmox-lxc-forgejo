@@ -34,8 +34,11 @@ See [opentofu/README.md](opentofu/README.md) for detailed configuration options.
 ```bash
 cd opentofu
 cp secrets.auto.tfvars.example secrets.auto.tfvars
-nano secrets.auto.tfvars # Edit: pm_api_url, container_ip, root_password
+nano secrets.auto.tfvars # Edit: pm_api_url, root_password, ip_prod/test
 tofu init
+tofu workspace new prod
+tofu workspace new test
+tofu workspace select prod   # or test
 tofu apply
 ```
 
@@ -44,10 +47,8 @@ See [ansible/README.md](ansible/README.md) for detailed configuration options.
 ```bash
 cd ../ansible
 cp secrets.yml.example secrets.yml
-nano secrets.yml # Edit: db_password, container_ip
-cp inventory.ini.example inventory.ini
-nano inventory.ini # Edit: container_ip (MUST MATCH Step 1!)
-ansible-playbook playbook.yml
+nano secrets.yml # Edit: db_password
+ansible-playbook playbook.yml -l prod   # or test
 ```
 
 ### Step 3: Access Forgejo
@@ -56,11 +57,6 @@ ansible-playbook playbook.yml
 - **Git SSH:** Port `22` (configure in Forgejo web UI)
 
 ## Configuration
-
-### ⚠️ Important: IP Address Matching
-The `container_ip` **must be identical** in both configs:
-- `opentofu/secrets.auto.tfvars` → `container_ip = "192.168.10.51/24"`
-- `ansible/secrets.yml` → `container_ip: "192.168.10.51"` (no /24)
 
 ### Password Generation
 
@@ -76,11 +72,9 @@ openssl rand -base64 32
 
 ### Manual backup/restore
 ```bash
-ssh ansible@<container_ip> -p 2222
+ssh ansible@<container_ip> -p 2222 'sudo /opt/forgejo/forgejo-backup.sh'
 
-sudo /opt/forgejo/forgejo-backup.sh
-
-sudo /opt/forgejo/forgejo-restore.sh <backup-file>
+ssh ansible@<container_ip> -p 2222 'sudo /opt/forgejo/forgejo-restore.sh <backup-file>'
 ```
 
 ## Maintenance
@@ -91,7 +85,7 @@ Monitor component versions to track server lifecycle:
 ```bash
 # Setup
 cp scripts/check-updates.sh.example scripts/check-updates.sh
-# Edit SERVER variable in the script
+# Edit SERVER variable in the script: ip + ssh port
 nano scripts/check-updates.sh
 
 # Run

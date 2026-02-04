@@ -3,14 +3,14 @@
 # HTTP to HTTPS redirect
 server {
     listen 80;
-    server_name {{ container_ip }};
+    server_name {{ ansible_host }};
     return 301 https://$host$request_uri;
 }
 
 # HTTPS server
 server {
     listen 443 ssl;
-    server_name {{ container_ip }};
+    server_name {{ ansible_host }};
 
      # SSL certificates
     ssl_certificate /etc/nginx/ssl/forgejo.crt;
